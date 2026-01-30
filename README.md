@@ -7,6 +7,15 @@ processes** to help with troubleshooting and performance checks.
 
 ------------------------------------------------------------------------
 
+# 📘 Project Reference
+
+This script is inspired by and aligned with the **Server Stats project**
+from roadmap.sh:
+
+https://roadmap.sh/projects/server-stats
+
+------------------------------------------------------------------------
+
 ## 1️⃣ Shebang and Script Header
 
 ``` bash
