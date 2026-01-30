@@ -1,56 +1,79 @@
 🔍 Detailed Script Breakdown
-This section explains the logic behind each command used in the script.
 
-1. The Shebang and Header
-Bash
+This section explains the purpose and logic behind each command used in the monitoring script. The script collects CPU, memory, disk, and process usage to provide a quick system health overview.
+
+1️⃣ Shebang and Script Header
 #!/bin/bash
-#!/bin/bash: The Shebang. It tells the operating system to use the Bash interpreter located in /bin/bash to execute the file.
 
-2. CPU Usage Calculation
-Bash
+
+What it does:
+
+Known as the shebang
+
+Tells the operating system to execute the script using the Bash interpreter
+
+Ensures consistent behavior across Linux environments
+
+2️⃣ CPU Usage Calculation
 cpu_idle=$(top -bn1 | grep "Cpu(s)" | awk '{print $8}')
 cpu_usage=$(echo "100 - $cpu_idle" | bc)
-top -bn1: Runs the top command in batch mode for number of 1 iteration. This allows us to capture the output as static text.
 
-grep "Cpu(s)": Isolates the specific line containing CPU percentage data.
+Command breakdown
+Command	Purpose
+top -bn1	Runs top in batch mode for 1 iteration to get static output
+grep "Cpu(s)"	Filters the CPU statistics line
+awk '{print $8}'	Extracts the idle CPU percentage
+bc	Performs math calculation (100 − idle)
+Result
 
-awk '{print $8}': Extracts the 8th column, which represents the CPU idle time.
+Calculates:
 
-bc: The Basic Calculator. It performs the math (100 - idle) to determine the actual CPU load.
+CPU Usage = 100 − Idle %
 
-3. Memory Usage (Free vs. Used)
-Bash
+
+This gives the actual CPU load.
+
+3️⃣ Memory Usage (Free vs Used)
 free -m | awk 'NR==2{printf "Used: %dMB / Total: %dMB (%.2f%%)\n", $3, $2, $3*100/$2 }'
-free -m: Displays memory usage in Megabytes.
 
-NR==2: Targets the Number of Row 2 (the physical RAM row).
+Command breakdown
+Command	Purpose
+free -m	Shows memory usage in MB
+NR==2	Targets the physical RAM row
+$3	Used memory
+$2	Total memory
+printf	Formats readable output and calculates percentage
+Result example
+Used: 2048MB / Total: 4096MB (50.00%)
 
-$3, $2: Variables representing the Used ($3) and Total ($2) memory columns.
-
-printf: A formatting tool that creates a clean string and calculates the percentage on-the-fly.
-
-4. Disk Usage
-Bash
+4️⃣ Disk Usage
 df -h / | awk 'NR==2{printf "Used: %s / Total: %s (%s usage)\n", $3, $2, $5}'
-df -h /: Disk Free command targeting the root (/) partition in human-readable format.
 
-$3, $2, $5: Extracts the Used space, Total size, and the system-calculated percentage string ($5).
+Command breakdown
+Command	Purpose
+df -h /	Shows disk usage for root partition in human-readable format
+$3	Used space
+$2	Total size
+$5	Usage percentage
+printf	Clean formatted output
+Result example
+Used: 15G / Total: 40G (38% usage)
 
-5. Top 5 Processes (CPU & Memory)
-Bash
+5️⃣ Top 5 Processes (CPU & Memory)
 ps -eo pid,ppid,cmd,%cpu --sort=-%cpu | head -n 6
-ps -eo: The Process Status command with every process and a custom output format.
 
-pid,ppid,cmd,%cpu: Defines the specific columns to display.
+Command breakdown
+Command	Purpose
+ps -eo	Lists all running processes with custom columns
+pid,ppid,cmd,%cpu	Displays process ID, parent ID, command, and CPU usage
+--sort=-%cpu	Sorts by highest CPU usage first
+head -n 6	Shows header + top 5 processes
+Result
 
---sort=-%cpu: Sorts the output in descending order (highest usage first).
+Helps quickly identify:
 
-head -n 6: Captures the header line plus the top 5 process entries.
+High CPU consumers
 
-🛠 Prerequisites
-Operating System: Linux (Ubuntu/Debian recommended).
+Misbehaving processes
 
-Dependencies: bc (Basic Calculator) is required for math operations.
-
-Bash
-sudo apt update && sudo apt install bc -y
+Performance bottlenecks
