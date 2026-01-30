@@ -1,79 +1,166 @@
-🔍 Detailed Script Breakdown
+# 🔍 Detailed Script Breakdown
 
-This section explains the purpose and logic behind each command used in the monitoring script. The script collects CPU, memory, disk, and process usage to provide a quick system health overview.
+This document explains the purpose and logic behind each command used in
+the Linux system monitoring script.\
+The script provides a quick overview of **CPU, memory, disk, and running
+processes** to help with troubleshooting and performance checks.
 
-1️⃣ Shebang and Script Header
+------------------------------------------------------------------------
+
+## 1️⃣ Shebang and Script Header
+
+``` bash
 #!/bin/bash
+```
 
+### What it does
 
-What it does:
+-   Known as the **shebang**
+-   Tells Linux to execute the script using **Bash**
+-   Ensures consistent behavior across systems
 
-Known as the shebang
+------------------------------------------------------------------------
 
-Tells the operating system to execute the script using the Bash interpreter
+## 2️⃣ CPU Usage Calculation
 
-Ensures consistent behavior across Linux environments
-
-2️⃣ CPU Usage Calculation
+``` bash
 cpu_idle=$(top -bn1 | grep "Cpu(s)" | awk '{print $8}')
 cpu_usage=$(echo "100 - $cpu_idle" | bc)
+```
 
-Command breakdown
-Command	Purpose
-top -bn1	Runs top in batch mode for 1 iteration to get static output
-grep "Cpu(s)"	Filters the CPU statistics line
-awk '{print $8}'	Extracts the idle CPU percentage
-bc	Performs math calculation (100 − idle)
-Result
+### Explanation
 
-Calculates:
+  Command              Purpose
+  -------------------- ------------------------------------------
+  `top -bn1`           Runs `top` in batch mode for 1 iteration
+  `grep "Cpu(s)"`      Filters the CPU statistics line
+  `awk '{print $8}'`   Extracts CPU idle percentage
+  `bc`                 Performs math calculation
+
+### Formula
 
 CPU Usage = 100 − Idle %
 
+------------------------------------------------------------------------
 
-This gives the actual CPU load.
+## 3️⃣ Memory Usage (Free vs Used)
 
-3️⃣ Memory Usage (Free vs Used)
+``` bash
 free -m | awk 'NR==2{printf "Used: %dMB / Total: %dMB (%.2f%%)\n", $3, $2, $3*100/$2 }'
+```
 
-Command breakdown
-Command	Purpose
-free -m	Shows memory usage in MB
-NR==2	Targets the physical RAM row
-$3	Used memory
-$2	Total memory
-printf	Formats readable output and calculates percentage
-Result example
-Used: 2048MB / Total: 4096MB (50.00%)
+### Explanation
 
-4️⃣ Disk Usage
+  Field      Meaning
+  ---------- -------------------------------
+  `$3`       Used memory
+  `$2`       Total memory
+  `printf`   Formats clean readable output
+
+### Example Output
+
+    Used: 2048MB / Total: 4096MB (50.00%)
+
+------------------------------------------------------------------------
+
+## 4️⃣ Disk Usage
+
+``` bash
 df -h / | awk 'NR==2{printf "Used: %s / Total: %s (%s usage)\n", $3, $2, $5}'
+```
 
-Command breakdown
-Command	Purpose
-df -h /	Shows disk usage for root partition in human-readable format
-$3	Used space
-$2	Total size
-$5	Usage percentage
-printf	Clean formatted output
-Result example
-Used: 15G / Total: 40G (38% usage)
+### Explanation
 
-5️⃣ Top 5 Processes (CPU & Memory)
+  Field   Meaning
+  ------- ------------------
+  `$3`    Used space
+  `$2`    Total space
+  `$5`    Percentage usage
+
+### Example Output
+
+    Used: 15G / Total: 40G (38% usage)
+
+------------------------------------------------------------------------
+
+## 5️⃣ Top 5 Processes (CPU & Memory)
+
+``` bash
 ps -eo pid,ppid,cmd,%cpu --sort=-%cpu | head -n 6
+```
 
-Command breakdown
-Command	Purpose
-ps -eo	Lists all running processes with custom columns
-pid,ppid,cmd,%cpu	Displays process ID, parent ID, command, and CPU usage
---sort=-%cpu	Sorts by highest CPU usage first
-head -n 6	Shows header + top 5 processes
-Result
+### Explanation
 
-Helps quickly identify:
+  Option           Purpose
+  ---------------- ----------------------------------------
+  `ps -eo`         Lists all processes with custom format
+  `--sort=-%cpu`   Sorts by highest CPU usage
+  `head -n 6`      Shows header + top 5 processes
 
-High CPU consumers
+### Benefit
 
-Misbehaving processes
+Quickly identifies: - High CPU usage processes - Resource bottlenecks -
+Misbehaving services
 
-Performance bottlenecks
+------------------------------------------------------------------------
+
+# 🛠 Prerequisites
+
+## Supported OS
+
+-   Linux (Ubuntu/Debian recommended)
+-   Works on most distributions
+
+## Required Dependency
+
+### Install bc
+
+### Ubuntu/Debian
+
+``` bash
+sudo apt update && sudo apt install bc -y
+```
+
+### RHEL/CentOS/AlmaLinux/Rocky
+
+``` bash
+sudo yum install bc -y
+```
+
+------------------------------------------------------------------------
+
+# 🚀 Usage
+
+Make script executable:
+
+``` bash
+chmod +x monitor.sh
+```
+
+Run:
+
+``` bash
+./monitor.sh
+```
+
+------------------------------------------------------------------------
+
+# ✅ Summary
+
+This script provides:
+
+-   CPU usage
+-   Memory usage
+-   Disk usage
+-   Top resource-consuming processes
+
+Useful for:
+
+-   Server health checks
+-   Troubleshooting
+-   Performance monitoring
+-   Cron automation
+
+------------------------------------------------------------------------
+
+**Author:** frd amirul
